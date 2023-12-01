@@ -1,0 +1,164 @@
+{
+    "basePath": "/api",
+    "endpoints": [
+        {
+            "method": "POST",
+            "path": "/results",
+            "description": "Submit a new test result entry.",
+            "requestBody": {
+                "patientId": "integer",
+                "testCode": "string",
+                "orderId": "string",
+                "interpretation": "string",
+                "reportingPathologist": "string"
+            },
+            "successResponse": {
+                "code": 201,
+                "message": "Result submitted successfully.",
+                "data": {
+                    "resultId": "integer"
+                }
+            },
+            "errorResponses": [
+                {
+                    "code": 400,
+                    "message": "Bad Request - Missing or invalid input parameters."
+                },
+                {
+                    "code": 401,
+                    "message": "Unauthorized - User not authorized to submit results."
+                },
+                {
+                    "code": 404,
+                    "message": "Not Found - Patient or test not found."
+                },
+                {
+                    "code": 500,
+                    "message": "Internal Server Error."
+                }
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/results?resultId=:resultId",
+            "description": "Retrieve a specific test result by its ID.",
+            "parameters": [
+                {
+                    "name": "resultId",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "successResponse": {
+                "code": 200,
+                "message": "Result retrieved successfully.",
+                "data": {
+                    "patientId": "integer",
+                    "testCode": "string",
+                    "orderId": "string",
+                    "interpretation": "string",
+                    "reportingPathologist": "string",
+                    "timestamp": "string"
+                }
+            },
+            "errorResponses": [
+                {
+                    "code": 400,
+                    "message": "Bad Request - Invalid resultId parameter."
+                },
+                {
+                    "code": 401,
+                    "message": "Unauthorized - User not authorized to view results."
+                },
+                {
+                    "code": 404,
+                    "message": "Not Found - The specified result does not exist."
+                },
+                {
+                    "code": 500,
+                    "message": "Internal Server Error."
+                }
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/results",
+            "description": "Retrieve all test results, optionally filtered by patientId, testCode, or orderId.",
+            "successResponse": {
+                "code": 200,
+                "message": "Results retrieved successfully.",
+                "data": [
+                    {
+                        "resultId": "integer",
+                        "patientId": "integer",
+                        "testCode": "string",
+                        "orderId": "string",
+                        "interpretation": "string",
+                        "reportingPathologist": "string",
+                        "reportUrl": "string",
+                        "timestamp": "string"
+                    }
+                ]
+            },
+            "errorResponses": [
+                {
+                    "code": 400,
+                    "message": "Bad Request - Invalid query parameters."
+                },
+                {
+                    "code": 401,
+                    "message": "Unauthorized - User not authorized to view results."
+                },
+                {
+                    "code": 500,
+                    "message": "Internal Server Error."
+                }
+            ]
+        },
+        {
+            "method": "GET",
+            "path": "/results?patientId=:patientId",
+            "description": "Retrieve all test results for a specific patient.",
+            "parameters": [
+                {
+                    "name": "patientId",
+                    "required": true,
+                    "type": "integer"
+                }
+            ],
+            "successResponse": {
+                "code": 200,
+                "message": "Patient results retrieved successfully.",
+                "data": [
+                    {
+                        "resultId": "integer",
+                        "testCode": "string",
+                        "orderId": "string",
+                        "interpretation": "string",
+                        "reportingPathologist": "string",
+                        "reportUrl": "string",
+                        "timestamp": "string"
+                    }
+                ]
+            },
+            "errorResponses": [
+                {
+                    "code": 400,
+                    "message": "Bad Request - Invalid patientId parameter."
+                },
+                {
+                    "code": 401,
+                    "message": "Unauthorized - User not authorized to view patient's results."
+                },
+                {
+                    "code": 404,
+                    "message": "Not Found - No results found for the specified patient."
+                },
+                {
+                    "code": 500,
+                    "message": "Internal Server Error."
+                }
+            ]
+        }
+    ]
+}
