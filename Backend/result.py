@@ -110,7 +110,7 @@ def get_results():
                         REPORTING_PATHOLOGIST
                     FROM Results
                     WHERE ORDER_ID IN (
-                        SELECT ORDER_ID FROM Appointments WHERE PATIENT_ID = %s
+                        SELECT ORDER_ID FROM Orders WHERE PATIENT_ID = %s
                     )
                 """, (patient_id))
                 results = cursor.fetchone()

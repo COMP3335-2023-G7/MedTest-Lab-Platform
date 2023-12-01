@@ -89,7 +89,7 @@
             var billingContainer = document.getElementById("billingContainer");
 
             billingData.forEach(function (billingEntry) {
-                if (billingEntry.paymentStatus === "Paid") 
+                if (billingEntry.paymentStatus === "Paid") {
                     var card = document.createElement("div");
                     card.className = "card mx-4 mb-4";
                     card.innerHTML = `
@@ -115,6 +115,7 @@
                     `;
                     billingContainer.appendChild(card);
                     return;
+                }
                 var card = document.createElement("div");
                 card.className = "card mx-4 mb-4";
                 card.innerHTML = `

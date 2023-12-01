@@ -33,14 +33,13 @@
     </div>
 
     <script>
-        fetch("http://localhost:6688/api/results?patientId=1", {
+        fetch("http://localhost:6688/api/results?patientId="+localStorage.getItem("patient_id"), {
             "credentials": "include",
         })
             .then(response => response.json())
             .then(data => {
                 console.log("Results:", data.data);
                 if (data.message === "Result retrieved successfully.") {
-                    
                     initializeResultsUI([data.data]);
                 } else {
                     console.error('Results were not retrieved:', data.message);
@@ -67,7 +66,7 @@
                         </h4>
                         <br>
                         <h4>
-                            <b>Test Date:</b> ${result["orderDate"]}
+                            <b>Test Date:</b> ${result["orderDate"].split(" ")[1] + " " + result["orderDate"].split(" ")[2] + ", " + result["orderDate"].split(" ")[3]}
                         </h4>
                         <h4 class="mt-2">
                             <b>Interpretation:</b> ${result["INTERPRETATION"]}
