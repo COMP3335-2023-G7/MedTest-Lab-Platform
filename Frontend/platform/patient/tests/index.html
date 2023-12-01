@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MedTest Lab Platform</title>
+    <link rel="stylesheet" href="../../../css/style.css">
+    <link rel="stylesheet" href="../../../css/card_style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/css"></style>
+    <script src="booking.js"></script>
+</head>
+
+<body>
+    <div class="nav-links">
+        <a href="../index.html">Patient Home</a>
+        <a href="../tests/index.html">Tests Catalog</a>
+        <a href="../bookings_orders_record/index.html">Bookings & Orders</a>
+        <a href="../billing/index.html">Billing System</a>
+        <a href="../results/index.html">Test Results</a>
+        <a href="../../../index.html">Logout</a>
+    </div>
+
+    <div class="relative flex flex-col items-center justify-center overflow-hidden" style="margin-top:2%">
+        <h1 class="leading-30 text-6xl ">
+            <b>
+                MedTest Lab Platform - Patient (Tests Catalog with Appointment)
+            </b>
+        </h1>
+        <br><br>
+        <div class="mt-2 flex flex-wrap justify-center" id="testsContainer">
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', initializeTestsUI);
+    </script>
+</body>
+
+</html>

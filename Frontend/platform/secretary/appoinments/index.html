@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MedTest Lab Platform</title>
+    <link rel="stylesheet" href="../../../css/style.css">
+    <link rel="stylesheet" href="../../../css/card_style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/css"></style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script>
+        function makeOrder(appointment) {
+            fetch("http://localhost:6688/api/orders", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: new URLSearchParams({
+                        patientId: appointment.patientId,
+                        testCode: appointment.test_code,
+                        orderingPhysician: "secretary",
+                        orderStatus: "Incomplete"
+                    })
+                })
+                .then(data => {
+                    const result = data.json();
+                    result.then(
+                        result => {
+                            console.log(result);
+                            if (result.message === "Order created successfully.") {
+                                alert("Order created successfully.");
+                                window.location.href = "../";
+                            } else {
+                                alert("Order create failed.");
+                            }
+                        }
+                    )
+
+                })
+        }
+    </script>
+</head>
+
+<body>
+    <div class="nav-links">
+        <a href="../../secretary/index.html">Secretary Home</a>
+        <a href="../../secretary/appointments/index.html">Manage Appointments</a>
+        <a href="../../secretary/billing/index.html">Billing System</a>
+        <a href="../../index.html">Logout</a>
+    </div>
+
+    <div class="relative flex flex-col items-center justify-center overflow-hidden" style="margin-top:2%">
+        <h1 class="leading-30 text-6xl ">
+            <b>
+                MedTest Lab Platform - Secretary (Manage Appointments)
+            </b>
+        </h1>
+        <br><br>
+        <div class="mt-2 flex flex-wrap justify-center" id="appointmentsContainer">
+            <!-- This div will contain the dynamically generated appointment cards -->
+        </div>
+    </div>
+
+    <script>
+        async function getAppointmentData() {
+            try {
+                const response = await fetch('http://localhost:6688/api/appointments', {
+                    "credentials": "include",
+                });
+                const data = await response.json();
+                if (data.message === "Appointments retrieved successfully.") {
+                    return data.data;
+                } else {
+                    console.error('Tests were not retrieved:', data.message);
+                }
+            } catch (error) {
+                console.error('There has been a problem with your fetch operation:', error);
+            }
+        }
+
+        async function initializeTestsUI() {
+            const appointments = await getAppointmentData();
+            console.log("Tests:", appointments);
+            if (!appointments) return;
+
+            var appointmentsContainer = document.getElementById("appointmentsContainer");
+
+            appointments.forEach(function (appointment) {
+                var card = document.createElement("div");
+                card.className = "card mx-4 mb-4";
+                card.innerHTML = `
+                    <div class="card-body">
+                        <span class="tag tag-teal">Test Code</span>
+                        <br>
+                        <h4 class="text-2xl mt-2">
+                            <b>${appointment.name}</b>
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Date of Birth:</b> ${appointment.date.toString().split(' ')[1] + " " + appointment.date.toString().split(' ')[2] + " " + appointment.date.toString().split(' ')[3]}
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Contact Number:</b> ${appointment.contact}
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Appointment Test Name:</b> ${appointment.testName}
+                        </h4>
+                        <br>
+                        <button 
+                            type="button"
+                            class="text-lg w-full px-4 py-2 mt-4 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
+                            onclick="makeOrder(${JSON.stringify(appointment).split('"').join("&quot;")})"
+                        >
+                            Make the Order
+                        </button>
+                    </div>
+                `;
+
+                appointmentsContainer.appendChild(card);
+            });
+        }
+
+        // Call the function to initialize the UI after the page loads
+        document.addEventListener('DOMContentLoaded', initializeTestsUI);
+
+    </script>
+</body>
+
+</html>

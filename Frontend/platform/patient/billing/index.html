@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MedTest Lab Platform</title>
+    <link rel="stylesheet" href="../../../css/style.css">
+    <link rel="stylesheet" href="../../../css/card_style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/css"></style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script>
+        function makePayment(billingId) {
+            // You can implement the payment logic here
+            alert("Payment made for Billing ID: " + billingId);
+        }
+    </script>
+</head>
+
+<body>
+    <div class="nav-links">
+        <a href="../index.html">Patient Home</a>
+        <a href="../tests/index.html">Tests Catalog</a>
+        <a href="../bookings_orders_record/index.html">Bookings & Orders</a>
+        <a href="../billing/index.html">Billing System</a>
+        <a href="../results/index.html">Test Results</a>
+        <a href="../../../index.html">Logout</a>
+    </div>
+
+    <div class="relative flex flex-col items-center justify-center overflow-hidden" style="margin-top:2%">
+        <h1 class="leading-30 text-6xl ">
+            <b>
+                MedTest Lab Platform - Patient (Billing System)
+            </b>
+            
+        </h1>
+        <br><br>
+        <div class="mt-2 flex flex-wrap justify-center" id="billingContainer">
+            <!-- This div will contain the dynamically generated billing cards -->
+        </div>
+    </div>
+
+    <script>
+        // Sample billing data
+        var billingData = [
+            {
+                testCode: "ABC123",
+                testName: "Blood Test",
+                billingId: "12345678",
+                paymentAmount: "100"
+            },
+            {
+                testCode: "DEF456",
+                testName: "Urine Test",
+                billingId: "87654321",
+                paymentAmount: "150"
+            },
+            // Add more billing entries as needed
+        ];
+
+        // Generate card elements for each billing entry
+        var billingContainer = document.getElementById("billingContainer");
+
+        billingData.forEach(function (billingEntry) {
+            var card = document.createElement("div");
+            card.className = "card mx-4 mb-4";
+            card.innerHTML = `
+                <div class="card-body">
+                    <span class="tag tag-teal">Test Code</span>
+                    <br>
+                    <h4 class="text-2xl mt-2">
+                        <b>${billingEntry.testName}</b>
+                    </h4>
+                    <br>
+                    <h4>
+                        <b>Billing ID:</b> ${billingEntry.billingId}
+                    </h4>
+                    <br>
+                    <h4>
+                        <b>Payment Amount:</b> ${billingEntry.paymentAmount}
+                    </h4>
+                    <br>
+                    <button 
+                        class="text-lg w-full px-4 py-2 mt-4 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
+                        onclick="makePayment('${billingEntry.billingId}')"
+                    >
+                        Pay the Bill
+                    </button>
+                </div>
+            `;
+
+            billingContainer.appendChild(card);
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>MedTest Lab Platform</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="../css/style.css">
+        <script>
+            function loginPatient(name, password) {
+                data = new URLSearchParams();
+                data.append('name', name);
+                data.append('password', password);
+                data.append('userType', 'patient');
+
+                fetch('http://localhost:6688/api/login/patient', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: data
+                })
+                .then(data => {
+                    const result = data.json();
+                    result.then(
+                        result => {
+                            console.log(result);
+                            if (result.message === "Patient login successful.") {
+                                alert("Patient login successful.");
+                                localStorage.setItem("patient_id", result.patient_id);
+                                window.location.href = "../platform/patient/";
+                            } else {
+                                alert("Patient login failed.");
+                            }
+                        }
+                    )
+                    
+                })
+            }
+
+
+            function handleUserInput() {
+                var staffBox = document.getElementById("staffBox");
+                var patientBox = document.getElementById("patientBox");
+                var userName = document.getElementById("userName").value;
+                var password = document.getElementById("password").value;
+                
+                if (staffBox.checked) {
+                    loginStaff(userName, password);
+                } else if (patientBox.checked) {
+                    loginPatient(userName, password);
+                } else {
+                    alert("Please select a login type.");
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+        <div class="nav-links">
+            <a href="../">Home</a>
+            <a href="login.html">Login</a>
+            <a href="patient_signup.html">Patient SignUp</a>
+        </div>
+        
+
+        <div class="relative flex flex-col items-center justify-center overflow-hidden" style="margin-top:5%">
+            <h1 class="leading-30 text-6xl ">
+                <b>
+                    MedTest Lab Platform
+                </b>
+            </h1>
+            <br><br>
+            <div class="w-full p-6 bg-white rounded-md shadow-md lg:max-w-xl ">
+            <h1 class="text-3xl font-bold text-center text-gray-700">Login</h1>
+                <br />
+
+                <input id="staffBox" type="radio" name="login_type" value="staff">&nbsp;
+                <label for="staffBox">Staff</label>&nbsp;&nbsp;&nbsp;&nbsp;
+
+                <input id="patientBox" type="radio" name="login_type" value="patient">&nbsp;
+                <label for="patientBox">Patient</label>
+
+                <form class="mt-6">
+                <div class="mb-4">
+                <label
+                    htmlFor="userid"
+                    class="block text-sm font-semibold text-gray-800"
+                >
+                User Name
+                </label>
+                <input
+                    type="text"
+                    class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                    id="userName"
+                    required
+                />
+            </div>
+            <div class="mb-2">
+                <label
+                htmlFor="password"
+                class="block text-sm font-semibold text-gray-800"
+                >
+                Password
+                </label>
+                <input
+                    type="password"
+                    class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                    id="password"
+                    required
+                />
+            </div>
+            <br />
+            <div class="mt-2">
+                <button 
+                    type="button"
+                    class="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
+                    onclick="handleUserInput()"
+                    >
+                    Login
+                </button>
+            </div>
+            </form>
+        </div>
+        </div>
+    </body>
+</html>

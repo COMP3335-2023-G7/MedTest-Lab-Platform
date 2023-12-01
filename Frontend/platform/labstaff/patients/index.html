@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MedTest Lab Platform</title>
+    <link rel="stylesheet" href="../../../css/style.css">
+    <link rel="stylesheet" href="../../../css/card_style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/css"></style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script type="text/javascript" src="patients.js"></script>
+</head>
+
+<body>
+    <div class="nav-links">
+        <a href="../../../platform/labstaff/">Lab Staff Home</a>
+        <a href="../../labstaff/patients/">Patients</a>
+        <a href="../../labstaff/tests/">Tests Catalog</a>
+        <a href="../../../index.html">Logout</a>
+    </div>
+
+    <div class="relative flex flex-col items-center justify-center overflow-hidden" style="margin-top:2%">
+        <h1 class="leading-30 text-6xl ">
+            <b>
+                MedTest Lab Platform - Lab Staff (Booked Patients)
+            </b>
+        </h1>
+        <br><br>
+        <div class="mt-2">
+            <div class="container">
+                <div id="patientsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', initializeUI);
+    </script>
+    
+</body>
+
+</html>

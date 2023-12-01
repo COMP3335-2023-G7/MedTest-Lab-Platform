@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>MedTest Lab Platform</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="../css/style.css">
+        <script>
+            document.addEventListener('DOMContentLoaded', (event) => {
+                document.getElementById("btn").addEventListener("click", handleUserInput);
+            });
+
+            async function signupPatient(formData) {
+                const response = await fetch('http://localhost:6688/api/signup/patient', {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: formData
+                })
+                // console.log(response);
+                const data = response.json();
+                // console.log(data);
+                if (response.status == 201) {
+                    alert("Patient created successfully.");
+                    window.location.href = "login.html";
+                } else if (response.status == 409) {
+                    alert("Patient already exists.");
+                } else {
+                    alert("Error creating patient.");
+                }
+            }
+
+            async function handleUserInput() {
+                
+                var name = document.getElementById("name").value;
+                var birthday = document.getElementById("birthday").value;
+                var contact = document.getElementById("contact").value;
+                var insurance = document.getElementById("insurance").value;
+                var password = document.getElementById("password").value;
+                
+                var formData = new FormData(document.getElementById('sign-form'));
+                
+                const data = new URLSearchParams();
+                for (const pair of formData) {
+                    data.append(pair[0], pair[1]);
+                }
+                signupPatient(data);
+
+                return false;
+            }
+
+        </script>
+        
+    </head>
+
+    <body>
+        <div class="nav-links">
+            <a href="../">Home</a>
+            <a href="login.html">Login</a>
+            <a href="patient_signup.html">Patient SignUp</a>
+        </div>
+        
+
+        <div class="relative flex flex-col items-center justify-center overflow-hidden" style="margin-top:5%">
+            <h1 class="leading-30 text-6xl ">
+                <b>
+                    MedTest Lab Platform
+                </b>
+            </h1>
+            <br><br>
+            <div class="w-full p-6 bg-white rounded-md shadow-md lg:max-w-xl ">
+            <h1 class="text-3xl font-bold text-center text-gray-700">Patient Signup</h1>
+                <form id="sign-form" class="mt-6">
+
+                <div class="mb-4">
+                    <label
+                        htmlFor="name"
+                        class="block text-sm font-semibold text-gray-800"
+                    >
+                        Name
+                    </label>
+                    <input
+                        type="text"
+                        class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        id = "name"
+                        name = "name"
+                        required
+                    />
+                </div>
+
+                <div class="mb-4">
+                    <label
+                        htmlFor="birthday"
+                        class="block text-sm font-semibold text-gray-800"
+                    >
+                        Birthday
+                    </label>
+                    <input
+                        type="date"
+                        class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        id="birthday"
+                        name="birthday"
+                        required
+                    />
+                </div>
+
+                <div class="mb-4">
+                    <label
+                        htmlFor="contact"
+                        class="block text-sm font-semibold text-gray-800"
+                    >
+                        Contact
+                    </label>
+                    <input
+                        type="text"
+                        class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        id="contact"
+                        name="contact"
+                        required
+                    />
+                </div>
+
+                <div class="mb-4">
+                    <label
+                        htmlFor="insurance details"
+                        class="block text-sm font-semibold text-gray-800"
+                    >
+                        Insurance Details (Policy Number)
+                    </label>
+                    <input
+                        type="text"
+                        class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        id="insurance"
+                        name="insurance"
+                        required
+                    />
+                </div>
+                
+
+                <div class="mb-2">
+                    <label
+                    htmlFor="password"
+                    class="block text-sm font-semibold text-gray-800"
+                    >
+                        Password
+                    </label>
+                    <input
+                        type="password"
+                        class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        id="password"
+                        name="password"
+                        required
+                    />
+                </div>
+                
+                <br />
+
+                <div class="mt-2">
+                    <button 
+                        type="button"
+                        id="btn"
+                        class="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
+                    >
+                        Sign up
+                    </button> 
+                </div>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

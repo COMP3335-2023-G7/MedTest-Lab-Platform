@@ -1,0 +1,32 @@
+version: '3'
+services:
+  frontend:
+    build: ./Frontend
+    ports:
+      - "80:80"
+
+  backend:
+    build:
+      context: .  
+      dockerfile: Backend/Dockerfile
+    ports:
+      - "6688:6688"
+    volumes:
+      - ./Backend:/app/Backend
+      - ./API Docs:/app/API Docs
+      - ./Frontend:/app/Frontend
+
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: MedTest
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/database.sql
+      - ./Testdata.sql:/docker-entrypoint-initdb.d/Testdata.sql
+
+volumes:
+  dbdata:

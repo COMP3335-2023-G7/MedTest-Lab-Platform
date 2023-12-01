@@ -1,0 +1,14 @@
+.nav-links{
+    width: 80vw;
+    display: flex;
+    padding: 0 20vw;
+    padding-top: 2%;
+    justify-content: space-evenly;
+    align-items: center;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.nav-links li{
+    position:relative;
+}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MedTest Lab Platform</title>
+    <link rel="stylesheet" href="../../../css/style.css">
+    <link rel="stylesheet" href="../../../css/card_style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/css"></style>
+</head>
+
+<body>
+    <div class="nav-links">
+        <a href="../index.html">Patient Home</a>
+        <a href="../tests/index.html">Tests Catalog</a>
+        <a href="../bookings_orders_record/index.html">Bookings & Orders</a>
+        <a href="../billing/index.html">Billing System</a>
+        <a href="../results/index.html">Test Results</a>
+        <a href="../../../index.html">Logout</a>
+    </div>
+
+    <div class="relative flex flex-col items-center justify-center overflow-hidden" style="margin-top:2%">
+        <h1 class="leading-30 text-6xl ">
+            <b>
+                MedTest Lab Platform - Patient (Testing Results)
+            </b>
+        </h1>
+        <br><br>
+        <div class="mt-2 flex flex-wrap justify-center" id="resultsContainer">
+            <!-- This div will contain the dynamically generated result cards -->
+        </div>
+    </div>
+
+    <script>
+        fetch("http://localhost:6688/api/results?patientId=1", {
+            "credentials": "include",
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Results:", data.data);
+                if (data.message === "Result retrieved successfully.") {
+                    
+                    initializeResultsUI([data.data]);
+                } else {
+                    console.error('Results were not retrieved:', data.message);
+                }
+            })
+            // .catch(error => {
+            //     console.error('There has been a problem with your fetch operation:', error);
+            // });
+        
+        function initializeResultsUI(results) {
+            // Generate card elements for each result
+            var resultsContainer = document.getElementById("resultsContainer");
+
+            results.forEach(function (result) {
+                console.log(result)
+                var card = document.createElement("div");
+                card.className = "card mx-4 mb-4";
+                card.innerHTML = `
+                    <div class="card-body">
+                        <span class="tag tag-teal">${result["testCode"]}</span>
+                        <br>
+                        <h4 class="text-2xl mt-2">
+                            <b>${result["testName"]}</b>
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Test Date:</b> ${result["orderDate"]}
+                        </h4>
+                        <h4 class="mt-2">
+                            <b>Interpretation:</b> ${result["INTERPRETATION"]}
+                        </h4>
+                            <b>Reporting Pathologist:</b> ${result["REPORTING_PATHOLOGIST"]}
+                        </h4>
+                        <form action="${result["REPORT_URL"]}">
+                            <button 
+                                class="text-lg w-full px-4 py-2 mt-4 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
+                            >
+                                Download the Report
+                            </button>
+                        </form>
+                    </div>
+                `;
+
+                resultsContainer.appendChild(card);
+            });
+        }
+    </script>
+</body>
+
+</html>

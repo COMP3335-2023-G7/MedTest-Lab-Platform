@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>MedTest Lab Platform</title>
+        <link rel="stylesheet" href="css/style.css">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="../css/style.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+        <script>
+            function addTest(name, cost, description) {
+                data = new URLSearchParams();
+                data.append('name', name);
+                data.append('description', description);
+                data.append('cost', cost);
+
+                fetch('http://localhost:6688/api/tests', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: data
+                })
+                .then(data => {
+                    const result = data.json();
+                    result.then(
+                        result => {
+                            console.log(result);
+                            if (result.message === "Test created successfully.") {
+                                alert("Test created successfully.");
+                                window.location.href = "../";
+                            } else {
+                                alert("Test create failed.");
+                            }
+                        }
+                    )
+                    
+                })
+            }
+
+            function handleInput() {
+                var testName = document.getElementById("testName").value;
+                var testAmount = document.getElementById("testAmount").value;
+                var testDescription = document.getElementById("testDescription").value;
+
+                addTest(testName, testAmount, testDescription);
+            }
+        </script>
+    </head>
+
+    <body>
+        <div class="relative flex flex-col items-center justify-center overflow-hidden" style="margin-top:10%">
+            <div class="w-full p-6 bg-white rounded-md shadow-md lg:max-w-xl ">
+            <h1 class="text-3xl font-bold text-center text-gray-700">Add New Test</h1>
+                <form class="mt-6">
+                    
+                <div class="mb-4">
+                    <label
+                        htmlFor="testName"
+                        class="block text-sm font-semibold text-gray-800"
+                    >
+                        Test Name
+                    </label>
+                    <input
+                        type="text"
+                        class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        id = "testName"
+                        required
+                    />
+                </div>
+
+                <div class="mb-4">
+                    <label
+                        htmlFor="testDescription"
+                        class="block text-sm font-semibold text-gray-800"
+                    >
+                        Test Description
+                    </label>
+                    <textarea
+                        id="testDescription" name="testDescription" rows="4" cols="50"
+                        class="block w-full px-4 py-5 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        required
+                    ></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label
+                        htmlFor="testAmount"
+                        class="block text-sm font-semibold text-gray-800"
+                    >
+                        Amount (HKD)
+                    </label>
+                    <input
+                        type="text"
+                        class="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border rounded-md focus:border-gray-400 focus:ring-gray-300 focus:outline-none focus:ring focus:ring-opacity-40"
+                        id = "testAmount"
+                        required
+                    />
+                </div>
+
+                <br>
+                <div class="mt-2">
+                    <button 
+                        type="button"
+                        class="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
+                        onclick="handleInput()"
+                    >
+                        Add
+                    </button>
+
+                    <br><br>
+                    
+                    
+                </div>
+                </form>
+                <form action="index.html">
+                    <button 
+                        class="w-full px-4 py-2 tracking-wide text-black border border-2 transition-colors duration-200 transform bg-white-700 rounded-md hover:bg-gray-300 focus:outline-none focus:bg-gray-300" 
+                    >
+                        Back
+                    </button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

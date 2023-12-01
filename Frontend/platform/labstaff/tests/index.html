@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MedTest Lab Platform</title>
+    <link rel="stylesheet" href="../../../css/style.css">
+    <link rel="stylesheet" href="../../../css/card_style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style type="text/css"></style>
+</head>
+
+<body>
+    <div class="nav-links">
+        <a href="../../../platform/labstaff/">Lab Staff Home</a>
+        <a href="../../labstaff/patients/">Patients</a>
+        <a href="../../labstaff/tests/">Tests Catalog</a>
+        <a href="../../../index.html">Logout</a>
+    </div>
+
+    <div class="relative flex flex-col items-center justify-center overflow-hidden" style="margin-top:2%">
+        <h1 class="leading-30 text-6xl ">
+            <b>
+                MedTest Lab Platform - Lab Staff (Tests Catalog)
+            </b>
+        </h1>
+        <br><br>
+        <form action="add_new_test.html">
+            <button 
+                class="text-2xl w-full px-10 py-4 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
+            >
+                Add New Test
+            </button>
+        </form>
+        <br><br>
+        <div class="mt-2 flex flex-wrap justify-center" id="testsContainer">
+            <!-- This div will contain the dynamically generated cards -->
+        </div>
+    </div>
+
+    <script>
+        async function getTestData() {
+            try {
+                const response = await fetch('http://pi.bebop404.com:6688/api/tests');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                if (data.message === "Tests retrieved successfully.") {
+                    return data.data;
+                } else {
+                    console.error('Tests were not retrieved:', data.message);
+                }
+            } catch (error) {
+                console.error('There has been a problem with your fetch operation:', error);
+            }
+        }
+
+        async function initializeTestsUI() {
+            const tests = await getTestData();
+            console.log("Tests:", tests);
+            if (!tests) return;
+
+            var testsContainer = document.getElementById("testsContainer");
+
+            tests.forEach(function (test) {
+                var card = document.createElement("div");
+                card.className = "card mx-4 mb-4";
+                card.innerHTML = `
+                    <div class="card-body">
+                        <span class="tag tag-teal">${test.testId}</span>
+                        <br>
+                        <h4 class="text-2xl mt-2">
+                            <b>${test.name}</b>
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Amount (HKD):</b> ${test.cost}
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Details</b>
+                        </h4>
+                        <p class="mt-2">
+                            ${test.description}
+                        </p>
+                        <form action="edit_test.html">
+                            <button 
+                                class="text-lg w-full px-4 py-2 mt-4 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
+                            >
+                                Edit
+                            </button>
+                        </form>
+                    </div>
+                `;
+
+                testsContainer.appendChild(card);
+            });
+        }
+
+        // Call the function to initialize the UI after the page loads
+        document.addEventListener('DOMContentLoaded', initializeTestsUI);
+
+    </script>
+</body>
+
+</html>
