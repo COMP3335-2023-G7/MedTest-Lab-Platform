@@ -16,7 +16,7 @@
             data.append('paymentStatus', "Paid");
             data.append('insuranceClaimStatus', "Claimed");
 
-            fetch('http://localhost:6688/api/bills', {
+            fetch('http://pi.bebop404.com:6688/api/bills', {
                 method: 'PUT',
                 credentials: 'include',
                 headers: {
@@ -67,7 +67,7 @@
     <script>
         async function getBillData() {
             try {
-                const response = await fetch('http://localhost:6688/api/bills?patientId=' + localStorage.getItem("patient_id"), {
+                const response = await fetch('http://pi.bebop404.com:6688/api/bills?patientId=' + localStorage.getItem("patient_id"), {
                     "credentials": "include",
                 });
                 const data = await response.json();

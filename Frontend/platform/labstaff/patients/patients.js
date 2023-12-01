@@ -1,7 +1,7 @@
 // Function to fetch patient data from the API
 async function getPatientData() {
     try {
-        const response = await fetch('http://localhost:6688/api/orders', {
+        const response = await fetch('http://pi.bebop404.com:6688/api/orders', {
             "credentials": "include",
         });
         const data = await response.json();
@@ -82,7 +82,7 @@ function handlePatientsResult(interpretation, reportingPathologist, orderId) {
     data.append('reportingPathologist', reportingPathologist);
     data.append('orderId', orderId);
 
-    fetch('http://localhost:6688/api/results', {
+    fetch('http://pi.bebop404.com:6688/api/results', {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -113,7 +113,7 @@ function updateOrderStatus(orderId) {
     data.append('orderId', orderId);
     data.append('newStatus', "Completed");
 
-    fetch('http://localhost:6688/api/orders/status', {
+    fetch('http://pi.bebop404.com:6688/api/orders/status', {
         method: 'PUT',
         credentials: 'include',
         headers: {

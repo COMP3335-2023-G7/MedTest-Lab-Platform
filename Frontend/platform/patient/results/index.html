@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        fetch("http://localhost:6688/api/results?patientId="+localStorage.getItem("patient_id"), {
+        fetch("http://pi.bebop404.com:6688/api/results?patientId="+localStorage.getItem("patient_id"), {
             "credentials": "include",
         })
             .then(response => response.json())
