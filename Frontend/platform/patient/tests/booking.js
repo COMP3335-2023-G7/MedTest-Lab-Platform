@@ -1,6 +1,6 @@
 async function getTestData() {
     try {
-        const response = await fetch('http://pi.bebop404.com:6688/api/tests');
+        const response = await fetch('http://localhost:6688/api/tests');
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }

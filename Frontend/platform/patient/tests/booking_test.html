@@ -8,7 +8,7 @@
         <script>
             function makeBooking(testCode, date, patientId) {
                 console.log(testCode, date, patientId);
-                fetch("http://pi.bebop404.com:6688/api/appointments", {
+                fetch("http://localhost:6688/api/appointments", {
                     method: "POST",
                     credentials: "include",
                     headers: {

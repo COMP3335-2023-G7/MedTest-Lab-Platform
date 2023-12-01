@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script>
         function makeOrder(appointment) {
-            fetch("http://pi.bebop404.com:6688/api/orders", {
+            fetch("http://localhost:6688/api/orders", {
                     method: "POST",
                     credentials: "include",
                     headers: {
@@ -45,7 +45,7 @@
         }
 
         function makeBill(orderId) {
-            fetch("http://pi.bebop404.com:6688/api/bills", {
+            fetch("http://localhost:6688/api/bills", {
                     method: "POST",
                     credentials: "include",
                     headers: {
@@ -103,7 +103,7 @@
     <script>
         async function getAppointmentData() {
             try {
-                const response = await fetch('http://pi.bebop404.com:6688/api/appointments', {
+                const response = await fetch('http://localhost:6688/api/appointments', {
                     "credentials": "include",
                 });
                 const data = await response.json();

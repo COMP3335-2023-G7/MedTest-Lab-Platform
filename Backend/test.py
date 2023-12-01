@@ -94,45 +94,45 @@ def get_tests():
     Returns:
         A JSON response containing the status code, message, and an array of test objects.
     """
-    accessToken = request.cookies.get('access_token')
-    if verify_token(accessToken):
-        try:
-            test_id = request.args.get('testId')
-            db = create_db_connection()
+    # accessToken = request.cookies.get('access_token')
+    # if verify_token(accessToken):
+    try:
+        test_id = request.args.get('testId')
+        db = create_db_connection()
 
-            with db.cursor() as cursor:
-                if test_id:
-                    # Validate test_id to prevent SQL Injection
-                    if contains_sqli_attempt(test_id):
-                        ip = request.remote_addr
-                        record_malicious_attempt(ip, "SQL Injection attempt in get_tests")
-                        return jsonify({'code': 400, 'message': 'Bad Request - Suspicious input detected.'}), 400
+        with db.cursor() as cursor:
+            if test_id:
+                # Validate test_id to prevent SQL Injection
+                if contains_sqli_attempt(test_id):
+                    ip = request.remote_addr
+                    record_malicious_attempt(ip, "SQL Injection attempt in get_tests")
+                    return jsonify({'code': 400, 'message': 'Bad Request - Suspicious input detected.'}), 400
 
-                    query = "SELECT * FROM TestsCatalog WHERE test_code = %s"
-                    cursor.execute(query, (test_id,))
-                else:
-                    query = "SELECT * FROM TestsCatalog"
-                    cursor.execute(query)
+                query = "SELECT * FROM TestsCatalog WHERE test_code = %s"
+                cursor.execute(query, (test_id,))
+            else:
+                query = "SELECT * FROM TestsCatalog"
+                cursor.execute(query)
 
-                result = cursor.fetchall()
-                tests = []
-                for row in result:
-                    test = {
-                        'testId': row['TEST_CODE'],
-                        'name': row.get('NAME', 'N/A'),
-                        'description': row.get('DESCRIPTION', 'N/A'),
-                        'cost': row.get('COST', 'N/A')
-                    }
-                    tests.append(test)
+            result = cursor.fetchall()
+            tests = []
+            for row in result:
+                test = {
+                    'testId': row['TEST_CODE'],
+                    'name': row.get('NAME', 'N/A'),
+                    'description': row.get('DESCRIPTION', 'N/A'),
+                    'cost': row.get('COST', 'N/A')
+                }
+                tests.append(test)
 
-            return jsonify({'code': 200, 'message': 'Tests retrieved successfully.', 'data': tests}), 200
-        except Exception as e:
-            return jsonify({'code': 500, 'message': 'Internal Server Error - ' + str(e)}), 500
+        return jsonify({'code': 200, 'message': 'Tests retrieved successfully.', 'data': tests}), 200
+    except Exception as e:
+        return jsonify({'code': 500, 'message': 'Internal Server Error - ' + str(e)}), 500
 
-    return jsonify({
-            "code": 401,
-            "message": "Unauthorized - Invalid access token."
-        }), 401
+    # return jsonify({
+    #         "code": 401,
+    #         "message": "Unauthorized - Invalid access token."
+    #     }), 401
 
 
 
