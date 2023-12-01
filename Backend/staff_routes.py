@@ -35,6 +35,7 @@ def login_staff():
             # Check if staff member exists and verify the password
             if result:
                 stored_hashed_password, salt = result['PASSWORD'], result['SALT']
+                salt = salt.decode('utf-8')
                 if stored_hashed_password.decode('utf-8') == hash_password(password, salt):
                     session_key = generate_session_key()
                     ## add the identity and session key to create_access_token
