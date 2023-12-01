@@ -10,4 +10,4 @@ MYSQL_USER = 'root'         # Default user
 MYSQL_PASSWORD = 'root'     # Default password
 MYSQL_DB = 'MedTest'        # Default database name
 JWT_SECRET_KEY='medtest'     # Secret key for JWT
-AES_SECRET_KEY='nXvauj3Eg5K3IWurwt1HWK8OUi5cBiMV'
+AES_SECRET_KEY='B374A26A71490437AA024E4FADD5B497FDFF1A8EA6FF12F6FB65AF2720B59CCF'
