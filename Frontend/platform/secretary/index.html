@@ -6,6 +6,14 @@
         <link rel="stylesheet" href="../../../css/style.css">
         <script src="https://cdn.tailwindcss.com"></script>
         <style type="text/css"></style>
+        <script>
+            function logout(event) {
+                event.preventDefault();
+                localStorage.clear();
+                document.cookie = "access_token=;";
+                window.location.href = "../../index.html";
+            }
+        </script>
     </head>
 
     <body>
@@ -13,7 +21,7 @@
             <a href="../../platform/secretary/index.html">Secretary Home</a>
             <a href="../../platform/secretary/appoinments/index.html">Manage Appoinments</a>
             <a href="../../platform/secretary/billing/">Billing System</a>
-            <a href="../../index.html">Logout</a>
+            <a href="#" onclick="logout(event)">Logout</a>
         </div>
         <div class="relative flex flex-col items-center justify-center overflow-hidden" style="margin-top:10%">
             <h1 class="leading-30 text-7xl ">
