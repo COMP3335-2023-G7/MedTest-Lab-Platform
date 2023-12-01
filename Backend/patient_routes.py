@@ -114,7 +114,6 @@ def get_patient():
 
                 patient = cursor.fetchone()
 
-
                 if patient:
                     patient_data = {
                         "patientId": patient['PATIENT_ID'],

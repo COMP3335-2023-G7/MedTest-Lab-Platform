@@ -7,6 +7,6 @@ settings or constants that are used throughout an application.
 '''
 MYSQL_HOST = 'localhost'  # or the name of your MySQL Docker service
 MYSQL_USER = 'root'         # Default user
-MYSQL_PASSWORD = 'root'     # Default password
+MYSQL_PASSWORD = '123456'     # Default password
 MYSQL_DB = 'MedTest'        # Default database name
 JWT_SECRET_KEY='medtest'     # Secret key for JWT

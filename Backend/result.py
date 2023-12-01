@@ -1,11 +1,13 @@
 from flask import Blueprint, request, jsonify
-from helpers import contains_sqli_attempt, record_malicious_attempt, create_db_connection
+from helpers import contains_sqli_attempt, record_malicious_attempt, create_db_connection, verify_token
 import base64
 
 results_bp = Blueprint('results_bp', __name__)
 
 @results_bp.route('/api/results', methods=['POST'])
 def submit_result():
+    accessToken = request.cookies.get('access_token')
+    if verify_token(accessToken):
     # try:
         data = request.form
         # Extracting fields from the request body
@@ -35,13 +37,17 @@ def submit_result():
             result_id = cursor.lastrowid
 
             return jsonify({'code': 201, 'message': 'Result submitted successfully.', 'data': {'resultId': result_id}}), 201
-        
-    # except Exception as e:
-    #     return jsonify({'code': 500, 'message': 'Internal Server Error - ' + str(e)}), 500
+
+    return jsonify({
+        "code": 401,
+        "message": "Unauthorized - Invalid access token."
+    }), 401
 
 
 @results_bp.route('/api/results', methods=['GET'])
 def get_results():
+    accessToken = request.cookies.get('access_token')
+    if verify_token(accessToken):
     # try:
         result_id = request.args.get('resultId')
         order_id = request.args.get('orderId')
@@ -136,8 +142,12 @@ def get_results():
 
                 return jsonify({'code': 200, 'message': 'Result retrieved successfully.', 'data': info}), 200
 
-    # except Exception as e:
-    #     return jsonify({'code': 500, 'message': 'Internal Server Error - ' + str(e)}), 500
+
+    return jsonify({
+        "code": 401,
+        "message": "Unauthorized - Invalid access token."
+    }), 401
+
 
 
 
