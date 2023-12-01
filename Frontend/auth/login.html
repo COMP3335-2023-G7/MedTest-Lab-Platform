@@ -38,6 +38,40 @@
                 })
             }
 
+            function loginStaff(name, password) {
+                data = new URLSearchParams();
+                data.append('name', name);
+                data.append('password', password);
+                data.append('userType', 'staff');
+
+                fetch('http://localhost:6688/api/login/staff', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: data
+                })
+                .then(data => {
+                    const result = data.json();
+                    result.then(
+                        result => {
+                            console.log(result);
+                            if (result.message === "Staff login successful.") {
+                                alert("Staff login successful.");
+                                if (result.type === "labstaff") {
+                                    window.location.href = "../platform/labstaff/";
+                                } else if (result.type === "secretary") {
+                                    window.location.href = "../platform/secretary/";
+                                }
+                            } else {
+                                alert("Patient login failed.");
+                            }
+                        }
+                    )
+                    
+                })
+            }
 
             function handleUserInput() {
                 var staffBox = document.getElementById("staffBox");

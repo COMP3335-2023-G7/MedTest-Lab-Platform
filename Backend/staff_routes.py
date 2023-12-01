@@ -29,22 +29,26 @@ def login_staff():
     connection = create_db_connection()
     try:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT PASSWORD, SALT FROM Staff WHERE NAME = %s", (name,))
+            cursor.execute("SELECT PASSWORD, SALT, ROLE FROM Staff WHERE NAME = %s", (name,))
             result = cursor.fetchone()
-
+            print(result)
             # Check if staff member exists and verify the password
             if result:
                 stored_hashed_password, salt = result['PASSWORD'], result['SALT']
-                salt = salt.decode('utf-8')
+                salt = salt
                 if stored_hashed_password.decode('utf-8') == hash_password(password, salt):
                     session_key = generate_session_key()
                     ## add the identity and session key to create_access_token
                     encoded_session_key = base64.b64encode(session_key).decode('utf-8')
-                    access_token = create_access_token(identity=name, additional_claims={"session_key": encoded_session_key}, expires_delta=timedelta(seconds=1800))
+                    if (result["ROLE"] == "Lab Staff"):
+                        user_type = "labstaff"
+                    elif (result["ROLE"] == "Secretary"):
+                        user_type = "secretary"
+                    access_token = create_access_token(identity=name, additional_claims={"session_key": encoded_session_key, "type": user_type}, expires_delta=timedelta(seconds=1800))
                     session_key = generate_session_key()
                     cursor.execute("UPDATE Staff SET SESSION_KEY = %s WHERE NAME = %s", (encoded_session_key, name))
                     connection.commit()
-                    response = make_response(jsonify({"message": "Staff login successful."}), 200)
+                    response = make_response(jsonify({"message": "Staff login successful.", "type": user_type}), 200)
                     response.set_cookie("access_token", access_token)
                     return response
                 else:

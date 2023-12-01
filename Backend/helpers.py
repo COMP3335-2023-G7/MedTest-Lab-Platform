@@ -49,6 +49,7 @@ def verify_token(token):
     # Extract identity and session_key
     identity = decoded.get('sub')
     session_key = decoded.get('session_key')
+    type = decoded.get('type')
 
     if not identity or not session_key:
         print("Missing identity or session key in token")
@@ -62,7 +63,13 @@ def verify_token(token):
 
     try:
         with connection.cursor() as cursor:
-            cursor.execute("SELECT * FROM Patients WHERE NAME = %s AND SESSION_KEY = %s", (identity, session_key))
+            if type == 'patient':
+                cursor.execute("SELECT * FROM Patients WHERE NAME = %s AND SESSION_KEY = %s", (identity, session_key))
+            elif type == 'labstaff':
+                cursor.execute("SELECT * FROM Staff WHERE NAME = %s AND SESSION_KEY = %s", (identity, session_key))
+            elif type == 'secretary':
+                cursor.execute("SELECT * FROM Staff WHERE NAME = %s AND SESSION_KEY = %s", (identity, session_key))  
+                          
             result = cursor.fetchone()
             return bool(result)
     except pymysql.MySQLError as e:
