@@ -4,6 +4,7 @@ from flask_jwt_extended import create_access_token
 import base64
 from datetime import timedelta
 import os
+import config
 
 patient_bp = Blueprint('patient', __name__)
 
@@ -38,9 +39,9 @@ def register_patient():
             if cursor.fetchone():
                 return jsonify({"message": "Conflict - Patient already exists."}), 409
 
-            key = os.environ.get('AES_SECRET_KEY')
-            # print(key)
-            # key = config.AES_SECRET_KEY
+            #key = os.environ.get('AES_SECRET_KEY')
+            #print(key)
+            key = config.AES_SECRET_KEY
 
             # Set block encryption mode
             cursor.execute("SET block_encryption_mode = 'aes-256-cbc';")
