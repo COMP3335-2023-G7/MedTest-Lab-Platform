@@ -71,19 +71,24 @@ def verify_token(token):
     finally:
         connection.close()
 
-def mysql_aes_encrypt(data, key, connection):
+def mysql_aes_encrypt(data, key, iv, connection):
     with connection.cursor() as cursor:
-        query = "SELECT HEX(AES_ENCRYPT(%s, UNHEX(%s))) AS encrypted"
-        cursor.execute(query, (data, key))
+        cursor.execute("SET block_encryption_mode = 'aes-256-cbc'")
+        query = "SELECT HEX(AES_ENCRYPT(%s, UNHEX(%s), UNHEX(%s))) AS encrypted"
+        cursor.execute(query, (data, key, iv))
         result = cursor.fetchone()
         return result['encrypted'] if result else None
 
-def mysql_aes_decrypt(encrypted_data, key, connection):
+
+def mysql_aes_decrypt(encrypted_data, key, iv, connection):
     with connection.cursor() as cursor:
-        query = "SELECT AES_DECRYPT(UNHEX(%s), UNHEX(%s)) AS decrypted"
-        cursor.execute(query, (encrypted_data, key))
+        cursor.execute("SET block_encryption_mode = 'aes-256-cbc'")
+        query = "SELECT AES_DECRYPT(UNHEX(%s), UNHEX(%s), UNHEX(%s)) AS decrypted"
+        cursor.execute(query, (encrypted_data, key, iv))
         result = cursor.fetchone()
-        return result['decrypted'].decode('utf-8') if result and result['decrypted'] else None
+        decrypted_data = result['decrypted']
+        return decrypted_data.decode('utf-8') if decrypted_data else None
+
 
 def mysql_random_bytes(length, connection):
     with connection.cursor() as cursor:
