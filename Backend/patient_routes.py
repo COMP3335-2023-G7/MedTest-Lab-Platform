@@ -1,8 +1,10 @@
 from flask import Blueprint, request, jsonify, make_response
-from helpers import contains_sqli_attempt, record_malicious_attempt, generate_salt, hash_password, create_db_connection, generate_session_key
+from helpers import contains_sqli_attempt, record_malicious_attempt, generate_salt, hash_password, create_db_connection, generate_session_key, mysql_aes_encrypt, mysql_aes_decrypt, mysql_random_bytes
 from flask_jwt_extended import create_access_token
 import base64
 from datetime import timedelta
+import config
+import os
 
 patient_bp = Blueprint('patient', __name__)
 
@@ -37,14 +39,37 @@ def register_patient():
             if cursor.fetchone():
                 return jsonify({"message": "Conflict - Patient already exists."}), 409
 
+            # key = os.environ.get('AES_SECRET_KEY')
+            # print(key)
+            key = config.AES_SECRET_KEY
+
+            # Set block encryption mode
+            cursor.execute("SET block_encryption_mode = 'aes-256-cbc';")
+
+            # Set encryption key and initialization vector
+            cursor.execute("SELECT RANDOM_BYTES(16);")
+            init_vector = cursor.fetchone()
+            iv = init_vector['RANDOM_BYTES(16)']
+
+            iv = mysql_random_bytes(16, connection)
+            birthdate_e = mysql_aes_encrypt(birthdate, key, iv, connection)
+            contact_e = mysql_aes_encrypt(contact, key, iv, connection)
+            insurance_details_e = mysql_aes_encrypt(insurance_details, key, iv, connection)
+
             # Insert new patient
-            sql = "INSERT INTO Patients (NAME, BIRTHDATE, CONTACT, INSURANCE_DETAILS, PASSWORD, SALT) VALUES (%s, AES_ENCRYPT(%s, %s), AES_ENCRYPT(%s, %s), AES_ENCRYPT(%s, %s), %s, %s)"
-            cursor.execute(sql, (name, birthdate, salt, contact, salt, insurance_details, salt, hashed_password, salt))
+            sql = """
+                INSERT INTO Patients (NAME, BIRTHDATE, CONTACT, INSURANCE_DETAILS, PASSWORD, IV, SALT)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(sql, (name, birthdate_e, contact_e, insurance_details_e, hashed_password, iv, salt))
             patient_id = cursor.lastrowid
-        connection.commit()
+
+            connection.commit()
+
     finally:
         connection.close()
     return jsonify({"message": "Patient created successfully.", "data": {"patientId": patient_id}}), 201
+
 
 @patient_bp.route('/api/login/patient', methods=['POST'])
 def login_patient():
@@ -91,76 +116,77 @@ def login_patient():
 
     return jsonify({"message": "Internal Server Error"}), 500
 
-@patient_bp.route('/api/patient', methods=['GET'])
-def get_patient():
-    patient_id = request.args.get('patientId')
-    connection = create_db_connection()
-    try:
-        with connection.cursor() as cursor:
-            cursor.execute("SELECT SALT FROM Patients WHERE PATIENT_ID = %s", (patient_id,))
-            result = cursor.fetchone()
-            if result:
-                salt = result['SALT']
+# @patient_bp.route('/api/patient', methods=['GET'])
+# def get_patient():
+#     patient_id = request.args.get('patientId')
+#     connection = create_db_connection()
+#     try:
+#         with connection.cursor() as cursor:
+#             cursor.execute("SELECT SALT FROM Patients WHERE PATIENT_ID = %s", (patient_id,))
+#             result = cursor.fetchone()
+#             if result:
+#                 salt = result['SALT']
 
-                # Now, use the salt to decrypt the other fields
-                cursor.execute("""
-                    SELECT PATIENT_ID, NAME, 
-                        AES_DECRYPT(BIRTHDATE, %s) as BIRTHDATE, 
-                        AES_DECRYPT(CONTACT, %s) as CONTACT, 
-                        AES_DECRYPT(INSURANCE_DETAILS, %s) as INSURANCE_DETAILS
-                    FROM Patients 
-                    WHERE PATIENT_ID = %s
-                    """, (salt, salt, salt, patient_id))
+#                 # Now, use the salt to decrypt the other fields
+#                 cursor.execute("""
+#                     SELECT PATIENT_ID, NAME, 
+#                         AES_DECRYPT(BIRTHDATE, %s) as BIRTHDATE, 
+#                         AES_DECRYPT(CONTACT, %s) as CONTACT, 
+#                         AES_DECRYPT(INSURANCE_DETAILS, %s) as INSURANCE_DETAILS
+#                     FROM Patients 
+#                     WHERE PATIENT_ID = %s
+#                     """, (salt, salt, salt, patient_id))
 
-                patient = cursor.fetchone()
+#                 patient = cursor.fetchone()
 
-                if patient:
-                    patient_data = {
-                        "patientId": patient['PATIENT_ID'],
-                        "name": patient['NAME'],
-                        "birthdate": patient['BIRTHDATE'].decode('utf-8') if patient['BIRTHDATE'] else None,
-                        "contact": patient['CONTACT'].decode('utf-8') if patient['CONTACT'] else None,
-                        "insurance_details": patient['INSURANCE_DETAILS'].decode('utf-8') if patient['INSURANCE_DETAILS'] else None
-                    }
-                    return jsonify({"message": "Patient found.", "data": patient_data}), 200
-                else:
-                    return jsonify({"message": "Patient not found."}), 404
+#                 if patient:
+#                     patient_data = {
+#                         "patientId": patient['PATIENT_ID'],
+#                         "name": patient['NAME'],
+#                         "birthdate": patient['BIRTHDATE'].decode('utf-8') if patient['BIRTHDATE'] else None,
+#                         "contact": patient['CONTACT'].decode('utf-8') if patient['CONTACT'] else None,
+#                         "insurance_details": patient['INSURANCE_DETAILS'].decode('utf-8') if patient['INSURANCE_DETAILS'] else None
+#                     }
+#                     return jsonify({"message": "Patient found.", "data": patient_data}), 200
+#                 else:
+#                     return jsonify({"message": "Patient not found."}), 404
 
-    finally:
-        connection.close()
+#     finally:
+#         connection.close()
 
 
 def getPatientById(patient_id):
     connection = create_db_connection()
 
     with connection.cursor() as cursor:
-        cursor.execute("SELECT SALT FROM Patients WHERE PATIENT_ID = %s", (patient_id,))
+        key = config.AES_SECRET_KEY
+
+        cursor.execute("SELECT IV FROM Patients WHERE PATIENT_ID = %s", (patient_id,))
         result = cursor.fetchone()
         if result:
-            salt = result['SALT']
-
-            # Now, use the salt to decrypt the other fields
+            iv = result['IV']
             cursor.execute("""
                 SELECT PATIENT_ID, NAME, 
-                    AES_DECRYPT(BIRTHDATE, %s) as BIRTHDATE, 
-                    AES_DECRYPT(CONTACT, %s) as CONTACT, 
-                    AES_DECRYPT(INSURANCE_DETAILS, %s) as INSURANCE_DETAILS
+                    BIRTHDATE, 
+                    CONTACT, 
+                    INSURANCE_DETAILS
                 FROM Patients 
                 WHERE PATIENT_ID = %s
-                """, (salt, salt, salt, patient_id))
+                """, (patient_id))
 
             patient = cursor.fetchone()
+
+            birthdate = mysql_aes_decrypt(patient['BIRTHDATE'], key, iv, connection)
+            contact = mysql_aes_decrypt(patient['CONTACT'], key, iv, connection)
+            insurance_details = mysql_aes_decrypt(patient['INSURANCE_DETAILS'], key, iv, connection)
 
             if patient:
                 patient_data = {
                     "patientId": patient['PATIENT_ID'],
                     "name": patient['NAME'],
-                    "birthdate": patient['BIRTHDATE'].decode('utf-8') if patient['BIRTHDATE'] else None,
-                    "contact": patient['CONTACT'].decode('utf-8') if patient['CONTACT'] else None,
-                    "insurance_details": patient['INSURANCE_DETAILS'].decode('utf-8') if patient['INSURANCE_DETAILS'] else None
+                    "birthdate": birthdate if birthdate else None,
+                    "contact": contact if contact else None,
+                    "insurance_details": insurance_details if insurance_details else None
                 }
                 return patient_data
-        # else:
-        #     patient_data = None
-        #     return patient_data
 
