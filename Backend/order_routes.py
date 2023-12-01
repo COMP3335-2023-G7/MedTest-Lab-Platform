@@ -147,37 +147,6 @@ def get_orders_by_patient_id():
         "message": "Not Found - No orders found for the specified patient ID."
     }), 404
 
-
-# @order_bp.route('/api/orders', methods=['GET'])
-# def get_all_order():
-#     query = "SELECT * FROM Orders"
-#     connection = create_db_connection()
-#     try:
-#         with connection.cursor() as cursor:
-#             cursor.execute(query)
-#             result = cursor.fetchall()
-
-#     finally:
-#         connection.close()
-
-#     orders = []
-#     for row in result:
-#         order = {
-#             "orderId": row[0],
-#             "patientId": row[1],
-#             "testCode": row[2],
-#             "orderingPhysician": row[3],
-#             "orderDate": row[4],
-#             "status": row[5]
-#         }
-#         orders.append(order)
-
-#     return jsonify({
-#         "code": 200,
-#         "message": "Orders retrieved successfully.",
-#         "data": orders
-#     })
-
 # Endpoint to create a new order
 @order_bp.route('/api/orders', methods=['POST'])
 def create_order():
@@ -233,3 +202,44 @@ def create_order():
             "orderId": new_order_id
         }
     }), 201
+
+
+@order_bp.route('/api/orders/status', methods=['PUT'])
+def update_order_status():
+    data = request.form
+    order_id = data.get('orderId')
+    new_status = data.get('newStatus')
+
+    # Validate input
+    if not order_id or new_status not in ['Incomplete', 'Completed']:
+        return jsonify({
+            "code": 400,
+            "message": "Bad Request - Invalid input parameters."
+        }), 400
+
+    # Check if the order exists
+    connection = create_db_connection()
+    try:
+        with connection.cursor() as cursor:
+            check_order_query = "SELECT * FROM Orders WHERE ORDER_ID = %s"
+            cursor.execute(check_order_query, (order_id,))
+            order = cursor.fetchone()
+
+            if not order:
+                return jsonify({
+                    "code": 404,
+                    "message": "Not Found - The specified order does not exist."
+                }), 404
+
+            # Update the order status
+            update_query = "UPDATE Orders SET STATUS = %s WHERE ORDER_ID = %s"
+            cursor.execute(update_query, (new_status, order_id))
+            connection.commit()
+
+    finally:
+        connection.close()
+
+    return jsonify({
+        "code": 200,
+        "message": "Order status updated successfully."
+    })

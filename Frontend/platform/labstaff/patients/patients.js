@@ -95,6 +95,7 @@ function handlePatientsResult(interpretation, reportingPathologist, orderId) {
         console.log(result);
         if (result.message === "Result submitted successfully.") {
             alert("Result submitted successfully.");
+            updateOrderStatus(orderId);
             localStorage.removeItem("orderId");
             window.location.href = "index.html";
         } else {
@@ -104,6 +105,36 @@ function handlePatientsResult(interpretation, reportingPathologist, orderId) {
     })
     .catch(error => {
         console.error('Error submitting result:', error);
+    });
+}
+
+function updateOrderStatus(orderId) {
+    var data = new URLSearchParams();
+    data.append('orderId', orderId);
+    data.append('newStatus', "Completed");
+
+    fetch('http://localhost:6688/api/orders/status', {
+        method: 'PUT',
+        credentials: 'include',
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: data
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log(result);
+        if (result.message === "Order status updated successfully.") {
+            alert("Order status updated successfully.");
+            localStorage.removeItem("orderId");
+            window.location.href = "index.html";
+        } else {
+            alert("Error updating order status.");
+            localStorage.removeItem("orderId");
+        }
+    })
+    .catch(error => {
+        console.error('Error updating order status:', error);
     });
 }
 

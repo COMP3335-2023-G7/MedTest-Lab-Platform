@@ -11,8 +11,32 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <script>
         function makePayment(billingId) {
-            // You can implement the payment logic here
-            alert("Payment made for Billing ID: " + billingId);
+            var data = new URLSearchParams();
+            data.append('billingId', billingId);
+            data.append('paymentStatus', "Paid");
+            data.append('insuranceClaimStatus', "Claimed");
+
+            fetch('http://localhost:6688/api/bills', {
+                method: 'PUT',
+                credentials: 'include',
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: data
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log(result);
+                if (result.message === 'Bill updated successfully') {
+                    alert('Bill updated successfully');
+                    window.location.href = "index.html";
+                } else {
+                    alert("Error updating bill status.");
+                }
+            })
+            .catch(error => {
+                console.error('Error updating bill status:', error);
+            });
         }
     </script>
 </head>
@@ -41,56 +65,89 @@
     </div>
 
     <script>
-        // Sample billing data
-        var billingData = [
-            {
-                testCode: "ABC123",
-                testName: "Blood Test",
-                billingId: "12345678",
-                paymentAmount: "100"
-            },
-            {
-                testCode: "DEF456",
-                testName: "Urine Test",
-                billingId: "87654321",
-                paymentAmount: "150"
-            },
-            // Add more billing entries as needed
-        ];
+        async function getBillData() {
+            try {
+                const response = await fetch('http://localhost:6688/api/bills?patientId=' + localStorage.getItem("patient_id"), {
+                    "credentials": "include",
+                });
+                const data = await response.json();
+                if (data.message === "Bills retrieved successfully.") {
+                    console.log(data)
+                    return data.data;
+                } else {
+                    console.error('Tests were not retrieved:', data.message);
+                }
+            } catch (error) {
+                console.error('There has been a problem with your fetch operation:', error);
+            }
+        }
 
-        // Generate card elements for each billing entry
-        var billingContainer = document.getElementById("billingContainer");
+        async function initializeTestsUI() {
+            const billingData = await getBillData();
+            if (!billingData) return;
 
-        billingData.forEach(function (billingEntry) {
-            var card = document.createElement("div");
-            card.className = "card mx-4 mb-4";
-            card.innerHTML = `
-                <div class="card-body">
-                    <span class="tag tag-teal">Test Code</span>
-                    <br>
-                    <h4 class="text-2xl mt-2">
-                        <b>${billingEntry.testName}</b>
-                    </h4>
-                    <br>
-                    <h4>
-                        <b>Billing ID:</b> ${billingEntry.billingId}
-                    </h4>
-                    <br>
-                    <h4>
-                        <b>Payment Amount:</b> ${billingEntry.paymentAmount}
-                    </h4>
-                    <br>
-                    <button 
-                        class="text-lg w-full px-4 py-2 mt-4 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
-                        onclick="makePayment('${billingEntry.billingId}')"
-                    >
-                        Pay the Bill
-                    </button>
-                </div>
-            `;
+            var billingContainer = document.getElementById("billingContainer");
 
-            billingContainer.appendChild(card);
-        });
+            billingData.forEach(function (billingEntry) {
+                if (billingEntry.paymentStatus === "Paid") 
+                    var card = document.createElement("div");
+                    card.className = "card mx-4 mb-4";
+                    card.innerHTML = `
+                        <div class="card-body">
+                            <span class="tag tag-teal">${billingEntry.TestCode}</span>
+                            <br>
+                            <h4 class="text-2xl mt-2">
+                                <b>${billingEntry.TestName}</b>
+                            </h4>
+                            <br>
+                            <h4>
+                                <b>Billing ID:</b> ${billingEntry.billingId}
+                            </h4>
+                            <br>
+                            <h4>
+                                <b>Payment Amount:</b> ${billingEntry["billedAmount"]}
+                            </h4>
+                            <br>
+                            <h4>
+                                <b>Payment Status:</b> Paid
+                            </h4>
+                        </div>
+                    `;
+                    billingContainer.appendChild(card);
+                    return;
+                var card = document.createElement("div");
+                card.className = "card mx-4 mb-4";
+                card.innerHTML = `
+                    <div class="card-body">
+                        <span class="tag tag-teal">${billingEntry.TestCode}</span>
+                        <br>
+                        <h4 class="text-2xl mt-2">
+                            <b>${billingEntry.TestName}</b>
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Billing ID:</b> ${billingEntry.billingId}
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Payment Amount:</b> ${billingEntry["billedAmount"]}
+                        </h4>
+                        <br>
+                        <button 
+                            class="text-lg w-full px-4 py-2 mt-4 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
+                            onclick="makePayment('${billingEntry.billingId}')"
+                        >
+                            Pay the Bill
+                        </button>
+                    </div>
+                `;
+
+                billingContainer.appendChild(card);
+            });
+        }
+
+        initializeTestsUI();
+
     </script>
 </body>
 

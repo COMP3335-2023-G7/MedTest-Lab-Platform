@@ -38,59 +38,69 @@
     </div>
 
     <script>
-        // Sample billing data
-        var billingData = [
-            {
-                patientName: "John Doe",
-                contactNumber: "1234567890",
-                billingId: "12345678",
-                paymentAmount: "100"
-            },
-            {
-                patientName: "Jane Smith",
-                contactNumber: "9876543210",
-                billingId: "87654321",
-                paymentAmount: "150"
-            },
-            // Add more billing entries as needed
-        ];
+        async function getBillData() {
+            try {
+                const response = await fetch('http://localhost:6688/api/bills', {
+                    "credentials": "include",
+                });
+                const data = await response.json();
+                if (data.message === "Bills retrieved successfully.") {
+                    console.log(data)
+                    return data.data;
+                } else {
+                    console.error('Tests were not retrieved:', data.message);
+                }
+            } catch (error) {
+                console.error('There has been a problem with your fetch operation:', error);
+            }
+        }
 
-        // Generate card elements for each billing entry
-        var billingContainer = document.getElementById("billingContainer");
+        async function initializeTestsUI() {
+            const billingData = await getBillData();
+            if (!billingData) return;
 
-        billingData.forEach(function (billingEntry) {
-            var card = document.createElement("div");
-            card.className = "card mx-4 mb-4";
-            card.innerHTML = `
-                <div class="card-body">
-                    <br>
-                    <h4 class="text-2xl mt-2">
-                        <b>${billingEntry.patientName}</b>
-                    </h4>
-                    <br>
-                    <h4>
-                        <b>Contact Number:</b> ${billingEntry.contactNumber}
-                    </h4>
-                    <br>
-                    <h4>
-                        <b>Billing ID:</b> ${billingEntry.billingId}
-                    </h4>
-                    <br>
-                    <h4>
-                        <b>Payment Amount:</b> ${billingEntry.paymentAmount}
-                    </h4>
-                    <br>
-                    <button 
-                        class="text-lg w-full px-4 py-2 mt-4 tracking-wide text-white transition-colors duration-200 transform bg-gray-700 rounded-md hover:bg-gray-600 focus:outline-none focus:bg-gray-600" 
-                        onclick="paymentConfirmation('${billingEntry.patientName}', '${billingEntry.billingId}')"
-                    >
-                        Payment Received
-                    </button>
-                </div>
-            `;
+            var billingContainer = document.getElementById("billingContainer");
 
-            billingContainer.appendChild(card);
-        });
+            billingData.forEach(function (billingEntry) {
+                var card = document.createElement("div");
+                card.className = "card mx-4 mb-4";
+                card.innerHTML = `
+                    <div class="card-body">
+                        <br>
+                        <h4 class="text-2xl mt-2">
+                            <b>${billingEntry["patientName"]}</b>
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Contact Number:</b> ${billingEntry["patientContact"]}
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Billing ID:</b> ${billingEntry["billingId"]}
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Payment Amount:</b> ${billingEntry["billedAmount"]}
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Payment Insurance Claim Status:</b> ${billingEntry["insuranceClaimStatus"]}
+                        </h4>
+                        <br>
+                        <h4>
+                            <b>Payment Status:</b> ${billingEntry["paymentStatus"]}
+                        </h4>
+                        
+                    </div>
+                `;
+
+                billingContainer.appendChild(card);
+            });
+        }
+
+        // Call the function to initialize the UI after the page loads
+        document.addEventListener('DOMContentLoaded', initializeTestsUI);
+
     </script>
 </body>
 

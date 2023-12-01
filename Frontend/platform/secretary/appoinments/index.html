@@ -31,9 +31,46 @@
                             console.log(result);
                             if (result.message === "Order created successfully.") {
                                 alert("Order created successfully.");
+                                makeBill(result.data["orderId"]);
+                            } else if (result.code === 409) {
+                                alert("Order already exists.");
                                 window.location.href = "../";
                             } else {
                                 alert("Order create failed.");
+                            }
+                        }
+                    )
+
+                })
+        }
+
+        function makeBill(orderId) {
+            fetch("http://localhost:6688/api/bills", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: new URLSearchParams({
+                        orderId: orderId,
+                        paymentStatus: "unpaid",
+                        insuranceClaimStatus: "unclaimed"
+                    })
+                })
+                .then(data => {
+                    const result = data.json();
+                    result.then(
+                        result => {
+                            console.log(result);
+                            if (result.message === "Bill created successfully.") {
+                                alert("Bill created successfully.");
+                                window.location.href = "../";
+                            } else if (result.code === 409) {
+                                alert("Bill already exists.");
+                                window.location.href = "../";
+                            } 
+                            else {
+                                alert("Bill create failed.");
                             }
                         }
                     )

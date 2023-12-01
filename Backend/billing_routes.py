@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from helpers import contains_sqli_attempt, record_malicious_attempt, create_db_connection
+from patient_routes import getPatientById
 import hashlib
 import time
 import os
@@ -9,24 +10,89 @@ billing_bp = Blueprint('billing', __name__)
 
 @billing_bp.route('/api/bills', methods=['GET'])
 def get_bill():
-    order_id = request.args.get('orderId')
-    # validate the input
-    if not order_id or contains_sqli_attempt(order_id):
-        record_malicious_attempt(request.remote_addr, f"SQL injection attempt: {order_id}")
-        return jsonify({'error': 'Invalid billingId parameter'}), 400
+    patient_id = request.args.get('patientId')
+    
+    if patient_id:
+        if contains_sqli_attempt(patient_id):
+            record_malicious_attempt(request.remote_addr, f"SQL injection attempt: {patient_id}")
+            return jsonify({'error': 'Invalid billingId parameter'}), 400
 
-    connection = create_db_connection()
-    try:
-        with connection.cursor() as cursor:
-            query = "SELECT * FROM Billing WHERE ORDER_ID = %s"
-            cursor.execute(query, (order_id,))
-            bill = cursor.fetchone()
+        connection = create_db_connection()
+        if patient_id:
+            try:
+                bill = []
+                with connection.cursor() as cursor:
+                    query = "SELECT * FROM Orders WHERE PATIENT_ID = %s"
+                    cursor.execute(query, (patient_id, ))
+                    orderInfo = cursor.fetchall()
+                    
+                    for row in orderInfo:
+                        query = "SELECT PATIENT_ID FROM Orders WHERE ORDER_ID = %s"
+                        cursor.execute(query, (row["ORDER_ID"],))
+                        patient_id = cursor.fetchone()
 
-            if bill:
-                return jsonify(bill)
+                        query = "SELECT NAME FROM TestsCatalog WHERE TEST_CODE = %s"
+                        cursor.execute(query, (row["TEST_CODE"],))
+                        testName = cursor.fetchone()
+                        
+                        query = "SELECT * FROM Billing WHERE ORDER_ID = %s"
+                        cursor.execute(query, (row["ORDER_ID"],))
+                        billInfo = cursor.fetchone()
+                        if billInfo is not None:
+                            patient = getPatientById(patient_id["PATIENT_ID"])
 
-    finally:
-        connection.close()
+                            rowResult = {
+                                "billingId": billInfo["BILLING_ID"],
+                                "orderId": billInfo["ORDER_ID"],
+                                "billedAmount": billInfo["BILLED_AMOUNT"],
+                                "paymentStatus": billInfo["PAYMENT_STATUS"],
+                                "insuranceClaimStatus": billInfo["INSURANCE_CLAIM_STATUS"],
+                                "patientName": patient["name"],
+                                "patientContact": patient["contact"],
+                                "TestName": testName["NAME"],
+                                "TestCode": row["TEST_CODE"],
+                            }
+                            bill.append(rowResult)
+
+                    if bill:
+                        return jsonify({"message": "Bills retrieved successfully.", "data": bill})
+
+            finally:
+                connection.close()
+
+    if not patient_id:
+        connection = create_db_connection()
+        try:
+            bill = []
+            with connection.cursor() as cursor:
+                query = "SELECT * FROM Billing"
+                cursor.execute(query, ())
+                billQueryRes = cursor.fetchall()
+                
+                for row in billQueryRes:
+                    query = "SELECT PATIENT_ID FROM Orders WHERE ORDER_ID = %s"
+                    cursor.execute(query, (row["ORDER_ID"],))
+                    patient_id = cursor.fetchone()
+
+                    patient = getPatientById(patient_id["PATIENT_ID"])
+
+                    rowResult = {
+                        "billingId": row["BILLING_ID"],
+                        "orderId": row["ORDER_ID"],
+                        "billedAmount": row["BILLED_AMOUNT"],
+                        "paymentStatus": row["PAYMENT_STATUS"],
+                        "insuranceClaimStatus": row["INSURANCE_CLAIM_STATUS"],
+                        "patientName": patient["name"],
+                        "patientContact": patient["contact"]
+                    }
+                    print(rowResult)
+                    bill.append(rowResult)
+
+                if bill:
+                    return jsonify({"message": "Bills retrieved successfully.", "data": bill})
+
+        finally:
+            connection.close()
 
     return jsonify({'error': 'Bill not found'}), 404
 
@@ -74,29 +140,31 @@ def create_bill():
     finally:
         connection.close()
 
-    return jsonify({'billingId': billing_id}), 201
+    return jsonify({"message": "Bill created successfully.", 'billingId': billing_id}), 201
 
 
 @billing_bp.route('/api/bills', methods=['PUT'])
 def update_bill():
-    billing_id = request.args.get('billingId')
+    billing_id = request.form.get('billingId')
+    paymentStatus = request.form.get('paymentStatus')
+    insuranceClaimStatus = request.form.get('insuranceClaimStatus')
+
     if not billing_id or contains_sqli_attempt(billing_id):
         client_ip = request.remote_addr
         record_malicious_attempt(client_ip,
                                  f"SQL Injection attempt in billing update with Id: {billing_id}")
         return jsonify({'error': 'Invalid billingId parameter'}), 400
 
-    data = request.get_json()
+    data = request.form
     if not data:
         return jsonify({'error': 'Missing request body'}), 400
 
     connection = create_db_connection()
     try:
         with connection.cursor() as cursor:
-            query = "UPDATE Billing SET ORDER_ID = %s, BILLED_AMOUNT = %s, PAYMENT_STATUS = %s, " \
-                    "INSURANCE_CLAIM_STATUS = %s WHERE BILLING_ID = %s"
-            values = (data.get('orderId'), data.get('billedAmount'), data.get('paymentStatus'),
-                      data.get('insuranceClaimStatus'), billing_id)
+            query = "UPDATE Billing SET PAYMENT_STATUS = %s, INSURANCE_CLAIM_STATUS = %s WHERE BILLING_ID = %s"
+            values = (paymentStatus,
+                      insuranceClaimStatus, billing_id)
 
             cursor.execute(query, values)
             connection.commit()
