@@ -102,7 +102,7 @@ def login_patient():
                     session_key = generate_session_key()
                     ## add the identity and session key to create_access_token
                     encoded_session_key = base64.b64encode(session_key).decode('utf-8')
-                    access_token = create_access_token(identity=name, type=user_type, additional_claims={"session_key": encoded_session_key}, expires_delta=timedelta(seconds=1800))
+                    access_token = create_access_token(identity=name, additional_claims={"session_key": encoded_session_key, "type": user_type}, expires_delta=timedelta(seconds=1800))
                     cursor.execute("UPDATE Patients SET SESSION_KEY = %s WHERE NAME = %s", (encoded_session_key, name))
                     connection.commit()
                     response = make_response(jsonify({"message": "Patient login successful.", "patient_id": result["PATIENT_ID"]}), 200)
