@@ -70,3 +70,24 @@ def verify_token(token):
         return False
     finally:
         connection.close()
+
+def mysql_aes_encrypt(data, key, connection):
+    with connection.cursor() as cursor:
+        query = "SELECT HEX(AES_ENCRYPT(%s, UNHEX(%s))) AS encrypted"
+        cursor.execute(query, (data, key))
+        result = cursor.fetchone()
+        return result['encrypted'] if result else None
+
+def mysql_aes_decrypt(encrypted_data, key, connection):
+    with connection.cursor() as cursor:
+        query = "SELECT AES_DECRYPT(UNHEX(%s), UNHEX(%s)) AS decrypted"
+        cursor.execute(query, (encrypted_data, key))
+        result = cursor.fetchone()
+        return result['decrypted'].decode('utf-8') if result and result['decrypted'] else None
+
+def mysql_random_bytes(length, connection):
+    with connection.cursor() as cursor:
+        query = "SELECT HEX(RANDOM_BYTES(%s)) AS random_bytes"
+        cursor.execute(query, (length,))
+        result = cursor.fetchone()
+        return result['random_bytes'] if result else None
